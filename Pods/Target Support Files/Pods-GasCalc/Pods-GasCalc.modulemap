@@ -1,0 +1,6 @@
+module Pods_GasCalc {
+  umbrella header "Pods-GasCalc-umbrella.h"
+
+  export *
+  module * { export * }
+}
