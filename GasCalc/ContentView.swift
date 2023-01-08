@@ -8,7 +8,6 @@ import CoreData
 import SwiftSoup
 import SwiftUI
 
-
 struct ContentView: View {
     @State private var dist: String = ""
     @State private var cost: String = "0.00"
@@ -75,6 +74,11 @@ struct ContentView: View {
     var body: some View {
         let years: Array = (1984 ... 2023).reversed().map{String($0)}
         Form {
+            Text("GasCalc ⛽️")
+            .listRowInsets(EdgeInsets())
+            .listRowBackground(Color.clear)
+            .frame(maxWidth: .infinity, alignment: .center)
+            .font(.title)
             Section(header: Text("Vehicle")) {
                 Picker("Year", selection: $year) {
                     Text("").tag("")
