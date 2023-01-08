@@ -67,6 +67,11 @@ struct ContentView: View {
             cost = costStrs[0] + "." + costStrs[1]
         }.resume()
     }
+    
+    func canConvertToDouble(string: String) -> Bool {
+        return Double(string) != nil
+    }
+    
     var body: some View {
         let years: Array = (1984 ... 2023).reversed().map{String($0)}
         Form {
@@ -111,7 +116,6 @@ struct ContentView: View {
                     "Miles Traveled",
                     text: $dist
                 )
-                .keyboardType(.decimalPad)
             }
             Section {
                 Button(
@@ -121,6 +125,7 @@ struct ContentView: View {
                 ) {
                     Label("Get Gas Cost", systemImage: "fuelpump")
                 }
+                .disabled(year.isEmpty || make.isEmpty || model.isEmpty || us_state.isEmpty || !canConvertToDouble(string: dist))
                 if !cost.isEmpty {
                     Text("Cost: $" + String(cost))
                 }
