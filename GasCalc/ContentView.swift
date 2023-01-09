@@ -111,8 +111,8 @@ struct ContentView: View {
                 let doc: Document = try SwiftSoup.parse(raw_html)
                 let price_table = try doc.select("table").first()!  // Prices of gas types in state
                 dolPerGal = try Double(
-                    price_table.getElementsByTag("td").get(1).text().suffix(5)
-                )!  // Price of regular gas
+                    price_table.getElementsByTag("td").get(1).text().suffix(5)  // Price of regular gas
+                )!
             } catch Exception.Error(_, let message) {
                 print(message)
                 cost = "Error, try again."
@@ -140,7 +140,10 @@ struct ContentView: View {
     var body: some View {
         let years: Array = (1984 ... 2023).reversed().map{String($0)}
         Form {
-            Text("GasCalc ⛽️")
+            HStack {
+                Text("GasCalc")
+                Image(systemName: "fuelpump.circle")
+            }
             .listRowInsets(EdgeInsets())
             .listRowBackground(Color.clear)
             .frame(maxWidth: .infinity, alignment: .center)
