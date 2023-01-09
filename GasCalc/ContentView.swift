@@ -8,6 +8,60 @@ import CoreData
 import SwiftSoup
 import SwiftUI
 
+let state_abbreviations: [String: String] = [
+    "Alabama": "AL",
+    "Alaska": "AK",
+    "Arizona": "AZ",
+    "Arkansas": "AR",
+    "California": "CA",
+    "Colorado": "CO",
+    "Connecticut": "CT",
+    "Delaware": "DE",
+    "Florida": "FL",
+    "Georgia": "GA",
+    "Hawaii": "HI",
+    "Idaho": "ID",
+    "Illinois": "IL",
+    "Indiana": "IN",
+    "Iowa": "IA",
+    "Kansas": "KS",
+    "Kentucky": "KY",
+    "Louisiana": "LA",
+    "Maine": "ME",
+    "Maryland": "MD",
+    "Massachusetts": "MA",
+    "Michigan": "MI",
+    "Minnesota": "MN",
+    "Mississippi": "MS",
+    "Missouri": "MO",
+    "Montana": "MT",
+    "Nebraska": "NE",
+    "Nevada": "NV",
+    "New Hampshire": "NH",
+    "New Jersey": "NJ",
+    "New Mexico": "NM",
+    "New York": "NY",
+    "North Carolina": "NC",
+    "North Dakota": "ND",
+    "Ohio": "OH",
+    "Oklahoma": "OK",
+    "Oregon": "OR",
+    "Pennsylvania": "PA",
+    "Rhode Island": "RI",
+    "South Carolina": "SC",
+    "South Dakota": "SD",
+    "Tennessee": "TN",
+    "Texas": "TX",
+    "Utah": "UT",
+    "Vermont": "VT",
+    "Virginia": "VA",
+    "Washington": "WA",
+    "West Virginia": "WV",
+    "Wisconsin": "WI",
+    "Wyoming": "WY",
+    "District of Columbia": "DC"
+]
+
 struct ContentView: View {
     @State private var dist: String = ""
     @State private var cost: String = "0.00"
@@ -15,8 +69,12 @@ struct ContentView: View {
     @State private var year: String = ""
     @State private var make: String = ""
     @State private var model: String = ""
-    @State private var mpg_dict: [String: [String: String]] = [:]
+    @State private var mpg_dict: [String: [String: String]] = [:]  // [Make: [Model: MPG]]
     
+    /*
+     populateMpg populates mpg_dict with the associated data for the
+     inputted year.
+     */
     func populateMpg() {
         let fileURL = Bundle.main.url(forResource:"Data/\(year)", withExtension: "json")!
         do {
@@ -28,6 +86,11 @@ struct ContentView: View {
         }
     }
     
+    /*
+     calcGas calculates the cost of the gas spent on an inputted trip using the inputted vehicle.
+     The current price of gas in the inputted state is scrapped from gasprices.aaa.com. The cost of
+     gas for the trip is saved to the "cost" state variable.
+     */
     func calcGas() {
         cost = ""
         let url = URL(string: "https://gasprices.aaa.com/?state=" + (state_abbreviations[us_state]!))!
@@ -42,23 +105,26 @@ struct ContentView: View {
                 cost = "Error, try again."
                 return
             }
-            let raw_html = String(data: data, encoding: .utf8) ?? ""
+            let raw_html = String(data: data, encoding: .utf8) ?? ""  // Raw html from aaa.com
             var dolPerGal: Double = 0
             do {
                 let doc: Document = try SwiftSoup.parse(raw_html)
-                let price_table = try doc.select("table").first()!
-                dolPerGal = try Double(price_table.getElementsByTag("td").get(1).text().suffix(5))!
+                let price_table = try doc.select("table").first()!  // Prices of gas types in state
+                dolPerGal = try Double(
+                    price_table.getElementsByTag("td").get(1).text().suffix(5)
+                )!  // Price of regular gas
             } catch Exception.Error(_, let message) {
                 print(message)
                 cost = "Error, try again."
-            } catch {
-                print("Error")
+            }
+            catch {
+                print("Error getting price of gas from gasprices.aaa.com.")
                 cost = "Error, try again."
             }
             let distNum: Double = Double(dist) ?? 0
             let galPerDist: Double = 1 / Double(mpg_dict[make]![model]!)!
-            let newCost = distNum * galPerDist * dolPerGal
-            let roundedCost: Double = round(newCost * 100) / 100.0
+            let tripCost = distNum * galPerDist * dolPerGal
+            let roundedCost: Double = round(tripCost * 100) / 100.0
             var costStrs = String(roundedCost).components(separatedBy: ".")
             if (costStrs[1].count == 1) {
                 costStrs[1] += "0"
@@ -129,7 +195,8 @@ struct ContentView: View {
                 ) {
                     Label("Get Gas Cost", systemImage: "fuelpump")
                 }
-                .disabled(year.isEmpty || make.isEmpty || model.isEmpty || us_state.isEmpty || !canConvertToDouble(string: dist))
+                .disabled(year.isEmpty || make.isEmpty || model.isEmpty || us_state.isEmpty
+                          || !canConvertToDouble(string: dist))
                 if !cost.isEmpty {
                     Text("Cost: $" + String(cost))
                 }
